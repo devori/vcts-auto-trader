@@ -1,0 +1,19 @@
+{
+  "name": "vcts-auto-trader",
+  "version": "1.0.0",
+  "description": "\"# vcts-auto-trader\"",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devori/vcts-auto-trader.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/devori/vcts-auto-trader/issues"
+  },
+  "homepage": "https://github.com/devori/vcts-auto-trader#readme"
+}
