@@ -31,7 +31,8 @@
     "nock": "^9.0.14",
     "nodemon": "^1.11.0",
     "sinon": "^3.2.0",
-    "supertest": "^3.0.0"
+    "supertest": "^3.0.0",
+    "uuid": "^3.1.0"
   },
   "dependencies": {
     "body-parser": "^1.17.2",

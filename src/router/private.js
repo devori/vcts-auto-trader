@@ -1,10 +1,10 @@
 import express from 'express';
-import trader from '../trader';
+import * as trader from '../trader';
 
 const router = express.Router();
 
 router.post('/users/:user/traders', (req, res) => {
-  trader.run().then(() => {
+  trader.run(req.params.user).then(() => {
     res.sendStatus(201);
   }).catch(() => {
     res.sendStatus(500);

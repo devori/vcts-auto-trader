@@ -4,7 +4,7 @@ import supertest from 'supertest';
 import sinon from 'sinon';
 import { expect, should } from 'chai';
 import privateRouter from '../../src/router/private';
-import trader from '../../src/trader';
+import * as trader from '../../src/trader';
 
 describe('router/private', function () {
   const USER = 'TEST_USER_NAME';
