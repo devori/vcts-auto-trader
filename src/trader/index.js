@@ -1,11 +1,8 @@
 import async from 'async';
 import rule from './rule/default';
 import vctsApi from '../api/vcts';
-import uuid from 'uuid/v4';
 
-const TRADERS = {};
-
-function trade(accountId) {
+export function trade(accountId) {
   return new Promise((resolve, reject) => {
     async.series({
       tickers: callback => {
@@ -107,49 +104,4 @@ function trade(accountId) {
       });
     });
   });
-}
-
-export function run(accountId, market, interval) {
-  if (!accountId || !market || !interval) {
-    return Promise.reject();
-  }
-  if (TRADERS[accountId] && TRADERS[accountId][market]) {
-    return Promise.reject('duplicated');
-  }
-  const traderId = uuid();
-  TRADERS[accountId] = TRADERS[accountId] || {};
-  TRADERS[accountId][market] = {
-    interval
-  };
-  return Promise.resolve().then(() => {
-    TRADERS[accountId][market].id = setInterval(() => {
-      trade(accountId, market);
-    }, interval);
-    return {
-      market,
-      interval
-    };
-  });
-}
-
-export function stop(accountId, market) {
-  if (TRADERS[accountId] && TRADERS[accountId][market]) {
-    clearInterval(TRADERS[accountId][market].id);
-    TRADERS[accountId][market] = null;
-  }
-  return Promise.resolve();
-}
-
-export function list(accountId) {
-  let result = [];
-  if (!TRADERS[accountId]) {
-    return result;
-  }
-  for (let market in TRADERS[accountId]) {
-    result.push({
-      market,
-      interval: TRADERS[accountId][market].interval
-    });
-  }
-  return result;
 }

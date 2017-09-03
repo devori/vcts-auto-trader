@@ -1,10 +1,10 @@
 import express from 'express';
-import * as trader from '../trader';
+import * as looper from '../looper';
 
 const router = express.Router();
 
-router.post('/users/:user/traders', (req, res) => {
-  trader.run(req.params.user).then(() => {
+router.post('/users/:user/loopers', (req, res) => {
+  looper.run(req.params.user).then(() => {
     res.sendStatus(201);
   }).catch(() => {
     res.sendStatus(500);

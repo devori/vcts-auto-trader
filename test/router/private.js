@@ -4,24 +4,24 @@ import supertest from 'supertest';
 import sinon from 'sinon';
 import { expect, should } from 'chai';
 import privateRouter from '../../src/router/private';
-import * as trader from '../../src/trader';
+import * as looper from '../../src/looper';
 
 describe('router/private', function () {
   const USER = 'TEST_USER_NAME';
   let app;
   before(() => {
-    sinon.stub(trader, 'run')
+    sinon.stub(looper, 'run')
       .onCall(0).returns(Promise.resolve())
       .onCall(1).returns(Promise.reject());
     app = express();
     app.use('/', privateRouter);
   });
   after(() => {
-    trader.run.restore();
+    looper.run.restore();
   })
-  it('should return 201 when trader running using post is success', done => {
+  it('should return 201 when looper running using post is success', done => {
     supertest(app)
-      .post(`/users/${USER}/traders`)
+      .post(`/users/${USER}/loopers`)
       .expect(201)
       .end((err, res) => {
         if (err) {
@@ -31,9 +31,9 @@ describe('router/private', function () {
         done();
       })
   })
-  it('should return 500 when trader running using post is fail', done => {
+  it('should return 500 when looper running using post is fail', done => {
     supertest(app)
-      .post(`/users/${USER}/traders`)
+      .post(`/users/${USER}/loopers`)
       .expect(500)
       .end((err, res) => {
         if (err) {
