@@ -5,6 +5,7 @@ import env from '../../src/env';
 import * as vctsApi from '../../src/api/vcts';
 
 describe('api/vcts', function () {
+  const USERNAME = 'test-user';
   const MARKET = 'poloniex';
   describe('getTickers', () => {
     before(() => {
@@ -42,10 +43,10 @@ describe('api/vcts', function () {
       nock.cleanAll();
     })
   });
-  describe('getBalances', () => {
+  describe('getAssets', () => {
     before(() => {
       nock(env.VCTS_BASE_URL)
-        .get(`/api/v1/private/markets/${MARKET}/assets`)
+        .get(`/api/v1/private/users/${USERNAME}/markets/${MARKET}/assets`)
         .reply(200, {
           "USDT": {
             "BTC": []
@@ -66,10 +67,52 @@ describe('api/vcts', function () {
           }
         });
     });
-    it('should return balances when getBalances called', done => {
-      vctsApi.getBalances(MARKET).then(balances => {
+    it('should return assets when it called', done => {
+      vctsApi.getAssets(USERNAME, MARKET).then(balances => {
         expect(balances.USDT.BTC.length).to.equal(0);
         expect(balances.BTC.BCN[0].timestamp).to.equal(1498053342499);
+        done();
+      });
+    });
+    after(() => {
+      nock.cleanAll();
+    });
+  });
+  describe('buy', () => {
+    before(() => {
+      nock(env.VCTS_BASE_URL)
+        .post(`/api/v1/private/users/${USERNAME}/markets/${MARKET}/assets/BTC/ETH`, {
+          rate: 0.1,
+          units: 1
+        })
+        .reply(201, {
+          result: 'buy success'
+        });
+    });
+    it('should call url using post to buy when it called', done => {
+      vctsApi.buy(USERNAME, MARKET, 'BTC', 'ETH', 0.1, 1).then(res => {
+        expect(res.result).to.equal('buy success');
+        done();
+      });
+    });
+    after(() => {
+      nock.cleanAll();
+    });
+  });
+  describe('sell', () => {
+    before(() => {
+      nock(env.VCTS_BASE_URL)
+        .delete(`/api/v1/private/users/${USERNAME}/markets/${MARKET}/assets/BTC/ETH`, {
+          rate: 0.1,
+          units: 1
+        })
+        .reply(200, {
+          result: 'sell success'
+        });
+    });
+    it('should call url using delete to sell when it called', done => {
+      vctsApi.sell(USERNAME, MARKET, 'BTC', 'ETH', 0.1, 1).then(res => {
+        expect(res.result).to.equal('sell success');
         done();
       });
     });

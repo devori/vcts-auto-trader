@@ -17,8 +17,8 @@ export function getTickers(market, base, vcType) {
     .catch(() => {});
 }
 
-export function getBalances(market, base, vcType) {
-  let url = `${VCTS_PRIVATE_BASE_URL}/markets/${market}/assets`;
+export function getAssets(accountId, market, base, vcType) {
+  let url = `${VCTS_PRIVATE_BASE_URL}/users/${accountId}/markets/${market}/assets`;
   if (base) {
     url += `/${base}`;
   }
@@ -28,4 +28,22 @@ export function getBalances(market, base, vcType) {
   return axios.get(url)
     .then(res => res.data)
     .catch(() => {});
+}
+
+export function buy(accountId, market, base, vcType, rate, units) {
+  let url = `${VCTS_PRIVATE_BASE_URL}/users/${accountId}/markets/${market}/assets/${base}/${vcType}`;
+  return axios.post(url, {
+    rate,
+    units
+  }).then(res => res.data).catch(() => {});
+}
+
+export function sell(accountId, market, base, vcType, rate, units) {
+  let url = `${VCTS_PRIVATE_BASE_URL}/users/${accountId}/markets/${market}/assets/${base}/${vcType}`;
+  return axios.delete(url, {
+    data: {
+      rate,
+      units
+    }
+  }).then(res => res.data).catch(() => {});
 }

@@ -1,6 +1,6 @@
-function judgeForPurchase(vcType, lastPriceInfo, asset, balance) {
+function judgeForPurchase(vcType, lastPriceInfo, assets, balance) {
   let minPriceAsset = 1000000000;
-  asset.forEach(a => {
+  assets.forEach(a => {
     if (a.price < minPriceAsset) {
       minPriceAsset = a.price;
     }
@@ -21,11 +21,11 @@ function judgeForPurchase(vcType, lastPriceInfo, asset, balance) {
   };
 }
 
-function judgeForSale(vcType, lastPriceInfo, asset) {
+function judgeForSale(vcType, lastPriceInfo, assets) {
   let thresold = lastPriceInfo.highestBid * 0.93;
   let units = 0;
   let totalUnits = 0;
-  asset.forEach(a => {
+  assets.forEach(a => {
     totalUnits += a.units;
     if (a.price <= thresold) {
       units += a.units;
@@ -35,7 +35,7 @@ function judgeForSale(vcType, lastPriceInfo, asset) {
   let rate = lastPriceInfo.highestBid * 0.98;
   rate = Math.trunc(rate * 100000000) / 100000000;
 
-  if (asset.length === 1 && units === totalUnits) {
+  if (assets.length === 1 && units === totalUnits) {
     let restUnits = 0.00001 / rate;
     if (units > restUnits) {
       units -= restUnits;
