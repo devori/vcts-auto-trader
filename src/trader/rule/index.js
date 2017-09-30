@@ -10,10 +10,10 @@ export function judgeForPurchase(base, vcType, tickers, assets) {
   let lastTicker = tickers[tickers.length - 1];
 
   let result = { rate: 0, units: 0 };
-  if (lastTicker.high >= minAssetPrice * 0.93) {
+  if (lastTicker.ask >= minAssetPrice * 0.93) {
     return result;
   }
-  result.rate = Math.trunc(lastTicker.high * 1.02 * 100000000) / 100000000;
+  result.rate = Math.trunc(lastTicker.ask * 1.02 * 100000000) / 100000000;
   result.units = MAX_UNIT_COUNT[base];
 
   return result;
@@ -21,8 +21,9 @@ export function judgeForPurchase(base, vcType, tickers, assets) {
 
 export function judgeForSale(base, vcType, tickers, assets) {
   let lastTicker = tickers[tickers.length - 1];
-  let threshold =  lastTicker.low * 0.93;
+  let threshold =  lastTicker.bid * 0.93;
   let totalUnits = assets.reduce((acc, a) => acc + a.units, 0);
+  
   if (totalUnits <= 0.1) {
     return { units: 0, rate: 1000000000 };
   }
@@ -40,6 +41,6 @@ export function judgeForSale(base, vcType, tickers, assets) {
 
   return {
     units,
-    rate: lastTicker.low * 0.98
+    rate: lastTicker.bid * 0.98
   };
 }

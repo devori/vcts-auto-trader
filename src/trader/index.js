@@ -1,5 +1,5 @@
 import async from 'async';
-import rule from './rule/default';
+import rule from './rule';
 import * as vctsApi from '../api/vcts';
 import { VCTYPES } from '../env';
 
@@ -17,13 +17,15 @@ export function trade(accountId, market) {
     let baseAsset = assets[BASE][BASE][0];
 
     return VCTYPES.reduce((p, vcType) => {
-      let currentAssets = assets[BASE][vcType] || [];
-      let judgement = rule.judgeForPurchase(vcType, tickers[vcType], currentAssets, baseAsset);
-      let units = Math.trunc(judgement.units * 10000) / 10000;
-      if (units * judgement.rate >= 0.0001) {
+      if (baseAsset.units <= 0) {
         return p;
       }
-      baseAsset.total -= judgement.rate * judgement.units;
+      let currentAssets = assets[BASE][vcType] || [];
+      let judgement = rule.judgeForPurchase(vcType, [tickers[vcType]], currentAssets);
+      if (judgement.units === 0) {
+        return p;
+      }
+      baseAsset.units -= judgement.rate * judgement.units;
       return p.then(() => vctsApi.buy(accountId, market, base, vcType, judgement.rate, units));
     }, Promise.resolve()).then(() => {
       return tickers;
@@ -40,11 +42,7 @@ export function trade(accountId, market) {
         return p;
       }
       let judgement = rule.judgeForSale(vcType, tickers[vcType], currentAsset);
-      let units = Math.trunc(judgement.units * 10000) / 10000;
-      if (units * judgement.rate < 0.0001) {
-        return p;
-      }
-      return p.then(() => vctsApi.sell(accountId, market, base, vcType, judgement.rate, units));
+      return p.then(() => vctsApi.sell(accountId, market, base, vcType, judgement.rate, judgeForSale.units));
     }, Promise.resolve());
   });
 }
