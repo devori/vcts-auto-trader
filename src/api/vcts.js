@@ -4,6 +4,13 @@ import env from '../env';
 const VCTS_PRIVATE_BASE_URL = `${env.VCTS_BASE_URL}/api/v1/private`;
 const VCTS_PUBLIC_BASE_URL = `${env.VCTS_BASE_URL}/api/v1/public`;
 
+export function findUser(accountId) {
+    let url = `${VCTS_PRIVATE_BASE_URL}/users/${accountId}`;
+    return axios.get(url)
+      .then(() => ({ id: accountId }))
+      .catch(() => null);
+}
+
 export function getTickers(market, base, vcType) {
   let url = `${VCTS_PUBLIC_BASE_URL}/markets/${market}/tickers`;
   if (base) {

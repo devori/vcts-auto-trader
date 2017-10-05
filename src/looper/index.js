@@ -1,4 +1,5 @@
-import trader from '../trader'
+import * as vctsApi from '../api/vcts';
+import * as trader from '../trader';
 
 const LOOPERS = {};
 
@@ -9,11 +10,14 @@ export function run(accountId, market, interval = 1000 * 60 * 5) {
   if (LOOPERS[accountId] && LOOPERS[accountId][market]) {
     return Promise.reject('duplicated');
   }
-  LOOPERS[accountId] = LOOPERS[accountId] || {};
-  LOOPERS[accountId][market] = {
-    interval
-  };
-  return Promise.resolve().then(() => {
+  return vctsApi.findUser(accountId).then(user => {
+    if (!user) {
+      throw 'id does not exist';
+    }
+    LOOPERS[accountId] = LOOPERS[accountId] || {};
+    LOOPERS[accountId][market] = {
+      interval
+    };
     LOOPERS[accountId][market].id = setInterval(() => {
       trader.trade(accountId, market);
     }, interval);

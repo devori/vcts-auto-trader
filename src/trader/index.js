@@ -44,5 +44,7 @@ export function trade(accountId, market) {
       let judgement = rule.judgeForSale(vcType, tickers[vcType], currentAsset);
       return p.then(() => vctsApi.sell(accountId, market, base, vcType, judgement.rate, judgeForSale.units));
     }, Promise.resolve());
+  }).catch(e => {
+    console.log(e);
   });
 }

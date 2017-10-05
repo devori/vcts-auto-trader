@@ -5,6 +5,7 @@ import env from '../../src/env';
 import * as vctsApi from '../../src/api/vcts';
 
 describe('api/vcts', function () {
+  const NON_EXIST_USERNAME = 'non-exist-username';
   const USERNAME = 'test-user';
   const MARKET = 'poloniex';
   describe('getTickers', () => {
@@ -118,6 +119,33 @@ describe('api/vcts', function () {
     });
     after(() => {
       nock.cleanAll();
+    });
+  });
+  describe('findUser', () => {
+    before(() => {
+      nock(env.VCTS_BASE_URL)
+        .get(`/api/v1/private/users/${USERNAME}`)
+        .reply(200, {
+          id: USERNAME
+        });
+      nock(env.VCTS_BASE_URL)
+        .get(`/api/v1/private/users/${NON_EXIST_USERNAME}`)
+        .reply(404);
+    });
+    after(() => {
+      nock.cleanAll();
+    });
+    it('should return user when user exists', done => {
+      vctsApi.findUser(USERNAME).then(res => {
+        expect(res.id).to.equal(USERNAME);
+        done();
+      });
+    });
+    it('should return null when user does not exist', done => {
+      vctsApi.findUser(USERNAME).then(res => {
+        expect(res).to.be.null;
+        done();
+      });
     });
   });
 });
