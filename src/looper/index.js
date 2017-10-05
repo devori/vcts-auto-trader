@@ -2,7 +2,7 @@ import trader from '../trader'
 
 const LOOPERS = {};
 
-export function run(accountId, market, interval) {
+export function run(accountId, market, interval = 1000 * 60 * 5) {
   if (!accountId || !market || !interval) {
     return Promise.reject();
   }
