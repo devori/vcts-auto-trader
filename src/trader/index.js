@@ -6,7 +6,7 @@ import env from '../env';
 const BASE = 'BTC';
 
 export function trade(accountId, market) {
-  console.log(`[${Date()}] Auto-Trader`);
+  console.log(`[${Date()}] Auto-Trader Start`);
   return Promise.resolve().then(() => {
     return vctsApi.syncAssets(accountId, market, BASE, BASE);
   }).then(() => {
@@ -56,6 +56,8 @@ export function trade(accountId, market) {
       }
       return p.then(() => vctsApi.sell(accountId, market, BASE, vcType, judgement.rate, judgement.units));
     }, Promise.resolve());
+  }).then(() => {
+    console.log(`[${Date()}] Auto-Trader End`);
   }).catch(e => {
     console.log(e);
   });
