@@ -23,7 +23,7 @@ export function trade(accountId, market) {
       if (!tickers[vcType]) {
         return p;
       }
-      if (baseAsset.units <= 0) {
+      if (baseAsset.units < 0.0001) {
         return p;
       }
       let currentAssets = assets[BASE][vcType] || [];
