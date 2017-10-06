@@ -11,47 +11,103 @@ describe('router/private', function () {
   const MARKET = 'poloniex';
   const INTERVAL = 1000 * 60 * 5;
   let app;
-  before(() => {
-    sinon.stub(looper, 'run').withArgs(USER, MARKET, INTERVAL)
-      .onCall(0).returns(Promise.resolve())
-      .onCall(1).returns(Promise.reject());
-    app = express();
-    app.use(bodyParser.json());
-    app.use('/', privateRouter);
+  describe('run', () => {
+    before(() => {
+      sinon.stub(looper, 'run')
+        .withArgs(USER, MARKET, INTERVAL)
+          .onCall(0).resolves({})
+          .onCall(1).resolves({})
+          .onCall(2).rejects();
+      app = express();
+      app.use(bodyParser.json());
+      app.use('/', privateRouter);
+    });
+    after(() => {
+      looper.run.restore();
+    })
+    it('should return 201 when it call', done => {
+      supertest(app)
+        .post(`/users/${USER}/auto-traders/${MARKET}`)
+        .query({ interval: INTERVAL })
+        .expect(201)
+        .end((err, res) => {
+          if (err) {
+            expect.fail('', '', err);
+            return;
+          }
+          done();
+        });
+    });
+    it('should return 201 when it call without interval', done => {
+      supertest(app)
+        .post(`/users/${USER}/auto-traders/${MARKET}`)
+        .expect(201)
+        .end((err, res) => {
+          if (err) {
+            expect.fail('', '', err);
+            return;
+          }
+          done();
+        });
+    });
+    it('should return 500 when it fails', done => {
+      supertest(app)
+        .post(`/users/${USER}/auto-traders/${MARKET}`)
+        .query({ interval: INTERVAL })
+        .expect(500)
+        .end((err, res) => {
+          if (err) {
+            expect.fail('', '', err);
+            return;
+          }
+          done();
+        });
+    });
   });
-  after(() => {
-    looper.run.restore();
-  })
-  it('should return 201 when looper running using post is success', done => {
-    supertest(app)
-      .post(`/users/${USER}/auto-traders`)
-      .send({
-        market: MARKET,
-        interval: INTERVAL
-      })
-      .expect(201)
+  describe('list', () => {
+    before(() => {
+      sinon.stub(looper, 'list')
+        .withArgs(USER).returns({ poloniex: { interval: 1234 } });
+    });
+    after(() => {
+      looper.list.restore();
+    })
+    it('should return auto-traders when it call', done => {
+      supertest(app)
+      .get(`/users/${USER}/auto-traders`)
+      .expect(200)
       .end((err, res) => {
         if (err) {
           expect.fail('', '', err);
           return;
         }
+        expect(res.body[MARKET]).to.exist;
+        expect(res.body[MARKET].interval).to.equal(1234);
         done();
-      })
-  })
-  it('should return 500 when looper running using post is fail', done => {
-    supertest(app)
-      .post(`/users/${USER}/auto-traders`)
-      .send({
-        market: MARKET,
-        interval: INTERVAL
-      })
-      .expect(500)
+      });
+    });
+  });
+  describe('stop', () => {
+    let mockLooper;
+    before(() => {
+      mockLooper = sinon.mock(looper);
+    });
+    after(() => {
+      mockLooper.restore();
+    })
+    it('should be called looper.stop when it call', done => {
+      let expectation = mockLooper.expects('stop').withArgs(USER, MARKET).once();
+      supertest(app)
+      .delete(`/users/${USER}/auto-traders/${MARKET}`)
+      .expect(200)
       .end((err, res) => {
         if (err) {
           expect.fail('', '', err);
           return;
         }
+        expectation.verify();
         done();
-      })
-  })
+      });
+    });
+  });
 });

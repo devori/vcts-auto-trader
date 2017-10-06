@@ -20,10 +20,8 @@ describe('looper/index', function () {
     mockTrader.restore();
   })
   describe('run', () => {
-    afterEach(done => {
-      looper.stop(ACCOUNT_ID, MARKET).then(() => {
-        done();
-      });
+    afterEach(() => {
+      looper.stop(ACCOUNT_ID, MARKET);
     });
     it('should return looper info when run called', done => {
       looper.run(ACCOUNT_ID, MARKET, INTERVAL).then(info => {
@@ -48,10 +46,8 @@ describe('looper/index', function () {
     });
   });
   describe('stop', () => {
-    it('should not raise exception when looper is not running', done => {
-      looper.stop(ACCOUNT_ID, MARKET).then(() => {
-        done();
-      });
+    it('should not raise exception when looper is not running', () => {
+      looper.stop(ACCOUNT_ID, MARKET)
     });
   });
   describe('list', () => {
@@ -65,9 +61,8 @@ describe('looper/index', function () {
     })
     it('should return loopers info when get called', () => {
       let info = looper.list(ACCOUNT_ID);
-      expect(info.length).to.equal(1);
-      expect(info[0].market).to.equal(MARKET);
-      expect(info[0].interval).to.equal(INTERVAL);
+      expect(info[MARKET]).to.exist;
+      expect(info[MARKET].interval).to.equal(INTERVAL);
     });
   });
 });

@@ -3,7 +3,7 @@ import * as trader from '../trader';
 
 const LOOPERS = {};
 
-export function run(accountId, market, interval = 1000 * 60 * 5) {
+export function run(accountId, market, interval) {
   if (!accountId || !market || !interval) {
     return Promise.reject();
   }
@@ -31,21 +31,17 @@ export function run(accountId, market, interval = 1000 * 60 * 5) {
 export function stop(accountId, market) {
   if (LOOPERS[accountId] && LOOPERS[accountId][market]) {
     clearInterval(LOOPERS[accountId][market].id);
-    LOOPERS[accountId][market] = null;
+    delete LOOPERS[accountId][market];
   }
-  return Promise.resolve();
 }
 
 export function list(accountId) {
-  let result = [];
+  let result = {};
   if (!LOOPERS[accountId]) {
     return result;
   }
   for (let market in LOOPERS[accountId]) {
-    result.push({
-      market,
-      interval: LOOPERS[accountId][market].interval
-    });
+    result[market] = { interval: LOOPERS[accountId][market].interval };
   }
   return result;
 }
