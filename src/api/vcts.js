@@ -54,3 +54,10 @@ export function sell(accountId, market, base, vcType, rate, units) {
     }
   }).then(res => res.data).catch(() => {});
 }
+
+export function syncAssets(accountId, market, base, vcType) {
+  let url = `${VCTS_PRIVATE_BASE_URL}/users/${accountId}/markets/${market}/assets/${base}/${vcType}`;
+  return axios.put(url, null, {
+    params: { mode: 'sync' }
+  }).catch(() => {});
+}

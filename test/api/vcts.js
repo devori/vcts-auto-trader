@@ -148,4 +148,21 @@ describe('api/vcts', function () {
       });
     });
   });
+  describe('syncAssets', () => {
+    const BASE = 'BTC';
+    const VCTYPE = 'ETH';
+    before(() => {
+      nock(env.VCTS_BASE_URL)
+        .get(`/api/v1/private/users/${USERNAME}/markets/${MARKET}/assets/${BASE}/${VCTYPE}?mode=sync`)
+        .reply(200);
+    });
+    after(() => {
+      nock.cleanAll();
+    });
+    it('should return promise when it call', done => {
+      let result = vctsApi.syncAssets(USERNAME, MARKET, BASE, VCTYPE);
+      expect(result).to.be.a('promise');
+      done();
+    });
+  });
 });
