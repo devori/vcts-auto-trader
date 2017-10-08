@@ -11,13 +11,13 @@ describe('trader/rule/index', function () {
   });
   describe('judgeForPurchase', () => {
     describe('when base is BTC', () => {
-      it('when last ticker ask price < 93% of min price asset, return 0.1 units and ask * 1.02', () => {
-        let result = rule.judgeForPurchase('BTC', 'ETH', [{ ask: 92 }], [{ price: 100 }]);
+      it('when last ticker ask rate < 93% of min rate asset, return 0.1 units and ask * 1.02', () => {
+        let result = rule.judgeForPurchase('BTC', 'ETH', [{ ask: 92 }], [{ rate: 100 }]);
         expect(result.units).to.equal(0.1);
         expect(result.rate).to.equal(92 * 1.02);
       });
-      it('when last ticker ask price >= 93% of min price asset, return 0 units', () => {
-        let result = rule.judgeForPurchase('BTC', 'ETH', [{ ask: 93 }], [{ price: 100 }]);
+      it('when last ticker ask rate >= 93% of min rate asset, return 0 units', () => {
+        let result = rule.judgeForPurchase('BTC', 'ETH', [{ ask: 93 }], [{ rate: 100 }]);
         expect(result.units).to.equal(0);
       })
       it('when assets are empty, should return 0.1 units and ask * 1.02', () => {
@@ -33,27 +33,27 @@ describe('trader/rule/index', function () {
         let result = rule.judgeForSale('BTC', 'ETH', [{ bid: 92 }], []);
         expect(result.units).to.equal(0);
       });
-      it('when assets that are less than last ticker price * 0.93 exist, return units of assets and bid * 0.98 rate', () => {
+      it('when assets that are less than last ticker rate * 0.93 exist, return units of assets and bid * 0.98 rate', () => {
         let result = rule.judgeForSale('BTC', 'ETH', [{ bid: 100 }], [
-          { price: 92, units: 1 },
-          { price: 92, units: 2 },
-          { price: 92, units: 3 },
-          { price: 93, units: 4 }
+          { rate: 92, units: 1 },
+          { rate: 92, units: 2 },
+          { rate: 92, units: 3 },
+          { rate: 93, units: 4 }
         ]);
         expect(result.rate).to.equal(98);
         expect(result.units).to.equal(6);
       });
       it('when total units of assets <= 0.01, should return 0 units', () => {
         let result = rule.judgeForSale('BTC', 'ETH', [{ bid: 100 }], [
-          { price: 92, units: 0.1 }
+          { rate: 92, units: 0.1 }
         ]);
         expect(result.units).to.equal(0);
       });
       it('when return units is same to total unit, return units except 0.01 units', () => {
         let result = rule.judgeForSale('BTC', 'ETH', [{ bid: 100 }], [
-          { price: 92, units: 1 },
-          { price: 92, units: 2 },
-          { price: 92, units: 3 }
+          { rate: 92, units: 1 },
+          { rate: 92, units: 2 },
+          { rate: 92, units: 3 }
         ]);
         expect(result.units).to.equal(5.99);
       });

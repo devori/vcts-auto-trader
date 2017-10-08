@@ -4,7 +4,7 @@ const MAX_UNIT_COUNT = {
 
 export function judgeForPurchase(base, vcType, tickers, assets) {
   let minAssetPrice = assets.reduce((min, cur) => {
-    return min < cur.price ? min : cur.price
+    return min < cur.rate ? min : cur.rate
   }, 1000000000);
 
   let lastTicker = tickers[tickers.length - 1];
@@ -23,13 +23,13 @@ export function judgeForSale(base, vcType, tickers, assets) {
   let lastTicker = tickers[tickers.length - 1];
   let threshold =  lastTicker.bid * 0.93;
   let totalUnits = assets.reduce((acc, a) => acc + a.units, 0);
-  
+
   if (totalUnits <= 0.1) {
     return { units: 0, rate: 1000000000 };
   }
 
   let units = assets.reduce((acc, a) => {
-    if (a.price < threshold) {
+    if (a.rate < threshold) {
       acc += a.units;
     }
     return acc;
