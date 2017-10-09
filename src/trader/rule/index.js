@@ -1,8 +1,11 @@
+import logger from '../../util/logger';
+
 const MAX_UNIT_COUNT = {
   BTC: 0.1
 }
 
 export function judgeForPurchase(base, vcType, tickers, assets) {
+  logger.verbose('Judgement for purchase');
   let minAssetPrice = assets.reduce((min, cur) => {
     return min < cur.rate ? min : cur.rate
   }, 1000000000);
@@ -10,6 +13,7 @@ export function judgeForPurchase(base, vcType, tickers, assets) {
   let lastTicker = tickers[tickers.length - 1];
 
   let result = { rate: 0, units: 0 };
+  logger.verbose(`${lastTicker.ask}(ticker) ${minAssetPrice}(minAsset)`)
   if (lastTicker.ask >= minAssetPrice * 0.93) {
     return result;
   }
@@ -20,14 +24,10 @@ export function judgeForPurchase(base, vcType, tickers, assets) {
 }
 
 export function judgeForSale(base, vcType, tickers, assets) {
+  logger.verbose('Judgement for sale');
   let lastTicker = tickers[tickers.length - 1];
   let threshold =  lastTicker.bid * 0.93;
   let totalUnits = assets.reduce((acc, a) => acc + a.units, 0);
-
-  if (totalUnits <= 0.1) {
-    return { units: 0, rate: 1000000000 };
-  }
-
   let units = assets.reduce((acc, a) => {
     if (a.rate < threshold) {
       acc += a.units;
@@ -35,8 +35,13 @@ export function judgeForSale(base, vcType, tickers, assets) {
     return acc;
   }, 0);
 
-  if (totalUnits - units < 0.01) {
-    units = totalUnits - 0.01;
+  logger.verbose(`${totalUnits}(total) ${units}(units) ${threshold}(threshold)`)
+  if (totalUnits <= units) {
+    units -= 0.01;
+  }
+
+  if (units < 0) {
+    units = 0;
   }
 
   return {

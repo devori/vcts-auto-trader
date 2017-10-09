@@ -8,7 +8,7 @@ export function run(accountId, market, interval) {
     return Promise.reject();
   }
   if (LOOPERS[accountId] && LOOPERS[accountId][market]) {
-    return Promise.reject('duplicated');
+    return Promise.reject(`${accountId} - ${market} duplicated`);
   }
   return vctsApi.findUser(accountId).then(user => {
     if (!user) {

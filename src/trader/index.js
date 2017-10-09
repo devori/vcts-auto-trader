@@ -2,11 +2,12 @@ import async from 'async';
 import * as rule from './rule';
 import * as vctsApi from '../api/vcts';
 import env from '../env';
+import logger from '../util/logger';
 
 const BASE = 'BTC';
 
 export function trade(accountId, market) {
-  console.log(`[${Date()}] Auto-Trader Start`);
+  logger.info(`Auto-Trader Start`);
   return Promise.resolve().then(() => {
     return vctsApi.syncAssets(accountId, market, BASE, BASE);
   }).then(() => {
@@ -19,21 +20,28 @@ export function trade(accountId, market) {
   }).then(({ tickers, assets }) => {
     let baseAsset = assets[BASE][BASE][0];
 
+    logger.info('Purchase Start')
     return env.VCTYPES.reduce((p, vcType) => {
+      logger.verbose(`${vcType} - ${baseAsset.units}(${BASE})`);
       if (!tickers[vcType]) {
+        logger.verbose('There is no ticker');
         return p;
       }
       if (baseAsset.units < 0.0001) {
+        logger.verbose(`${BASE} is less than 0.0001`);
         return p;
       }
       let currentAssets = assets[BASE][vcType] || [];
       let judgement = rule.judgeForPurchase(BASE, vcType, [tickers[vcType]], currentAssets);
+      logger.verbose(`${judgement.units}(units) * ${judgement.rate}(rate) = ${judgement.units * judgement.rate}`)
       if (judgement.units * judgement.rate < 0.0001) {
+        logger.verbose('units * rate is less than 0.0001');
         return p;
       }
       baseAsset.units -= judgement.rate * judgement.units;
       return p.then(() => vctsApi.buy(accountId, market, BASE, vcType, judgement.rate, judgement.units));
     }, Promise.resolve()).then(() => {
+      logger.info('Purchase End')
       return tickers;
     });
   }).then(tickers => {
@@ -42,23 +50,31 @@ export function trade(accountId, market) {
       assets
     }));
   }).then(({ tickers, assets }) => {
+    logger.info('Sale Start')
     return env.VCTYPES.reduce((p, vcType) => {
+      logger.verbose(`${vcType} ----------`);
       if (!tickers[vcType]) {
+        logger.verbose('There is no ticker');
         return p;
       }
       let currentAsset = assets[BASE][vcType];
       if (!currentAsset || currentAsset.length === 0) {
+        logger.verbose('There is no asset');
         return p;
       }
       let judgement = rule.judgeForSale(BASE, vcType, [tickers[vcType]], currentAsset);
+      logger.verbose(`${judgement.units}(units) * ${judgement.rate}(rate) = ${judgement.units * judgement.rate}`)
       if (judgement.rate * judgement.units < 0.0001) {
+        logger.verbose('units * rate is less than 0.0001');
         return p;
       }
       return p.then(() => vctsApi.sell(accountId, market, BASE, vcType, judgement.rate, judgement.units));
-    }, Promise.resolve());
+    }, Promise.resolve()).then(() => {
+      logger.info('Sale End');
+    });
   }).then(() => {
-    console.log(`[${Date()}] Auto-Trader End`);
+    logger.info(`Auto-Trader End`);
   }).catch(e => {
-    console.log(e);
+    logger.error(e);
   });
 }

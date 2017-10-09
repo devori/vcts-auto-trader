@@ -21,6 +21,11 @@ describe('router/private', function () {
       app = express();
       app.use(bodyParser.json());
       app.use('/', privateRouter);
+      app.use((err, req, res, next) => {
+        res.status(500).json({
+          error: err
+        });
+      });
     });
     after(() => {
       looper.run.restore();

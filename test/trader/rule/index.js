@@ -43,12 +43,6 @@ describe('trader/rule/index', function () {
         expect(result.rate).to.equal(98);
         expect(result.units).to.equal(6);
       });
-      it('when total units of assets <= 0.01, should return 0 units', () => {
-        let result = rule.judgeForSale('BTC', 'ETH', [{ bid: 100 }], [
-          { rate: 92, units: 0.1 }
-        ]);
-        expect(result.units).to.equal(0);
-      });
       it('when return units is same to total unit, return units except 0.01 units', () => {
         let result = rule.judgeForSale('BTC', 'ETH', [{ bid: 100 }], [
           { rate: 92, units: 1 },

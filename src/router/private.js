@@ -3,14 +3,12 @@ import * as looper from '../looper';
 
 const router = express.Router();
 
-router.post('/users/:user/auto-traders/:market', (req, res) => {
+router.post('/users/:user/auto-traders/:market', (req, res, next) => {
   let interval = req.query.interval ? Number(req.query.interval) : 1000 * 60 * 5;
   looper.run(req.params.user, req.params.market, interval).then(() => {
     res.sendStatus(201);
   }).catch((err) => {
-    res.status(500).json({
-      error: err
-    });
+    next(err);
   });
 });
 

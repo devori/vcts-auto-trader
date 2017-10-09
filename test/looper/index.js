@@ -33,7 +33,7 @@ describe('looper/index', function () {
     it('should raise exception when duplicated run called', done => {
       looper.run(ACCOUNT_ID, MARKET, INTERVAL).then(() => {
         looper.run(ACCOUNT_ID, MARKET, INTERVAL).catch(err => {
-          expect(err).to.equal('duplicated');
+          expect(err).to.contain('duplicated');
           done();
         });
       });
