@@ -18,7 +18,8 @@ export function judgeForPurchase(base, vcType, tickers, assets) {
     return result;
   }
   result.rate = Math.trunc(lastTicker.ask * 1.02 * 100000000) / 100000000;
-  result.units = MAX_UNIT_COUNT[base];
+  result.units = MAX_UNIT_COUNT[base] / result.rate;
+  result.units = Math.trunc(result.units * 100000000) / 100000000;
 
   return result;
 }
