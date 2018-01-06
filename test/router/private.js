@@ -9,12 +9,12 @@ import * as looper from '../../src/looper';
 describe('router/private', function () {
   const USER = 'TEST_USER_NAME';
   const MARKET = 'poloniex';
-  const INTERVAL = 1000 * 60 * 5;
+  const INTERVAL = 60 * 5;
   let app;
   describe('run', () => {
     before(() => {
       sinon.stub(looper, 'run')
-        .withArgs(USER, MARKET, INTERVAL)
+        .withArgs(USER, MARKET, INTERVAL * 1000)
           .onCall(0).resolves({})
           .onCall(1).resolves({})
           .onCall(2).rejects();
@@ -87,7 +87,7 @@ describe('router/private', function () {
           return;
         }
         expect(res.body[MARKET]).to.exist;
-        expect(res.body[MARKET].interval).to.equal(1234);
+        expect(res.body[MARKET].interval).to.equal(1.234);
         done();
       });
     });
