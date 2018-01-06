@@ -26,7 +26,6 @@ export default {
   	"DCR",
   	"DGB",
   	"DOGE",
-  	"EMC2",
   	"ETC",
   	"ETH",
   	"EXP",

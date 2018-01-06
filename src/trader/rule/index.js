@@ -1,7 +1,7 @@
 import logger from '../../util/logger';
 
 const MAX_UNIT_COUNT = {
-  BTC: 0.01
+  BTC: 0.005
 }
 
 export function judgeForPurchase(base, vcType, tickers, assets) {
