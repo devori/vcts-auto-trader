@@ -4,7 +4,8 @@ import * as looper from '../looper';
 const router = express.Router();
 
 router.post('/users/:user/auto-traders/:market', (req, res, next) => {
-  let interval = req.query.interval ? Number(req.query.interval) : 1000 * 60 * 5;
+  let interval = req.query.interval ? Number(req.query.interval) : 60 * 5;
+  interval *= 1000;
   looper.run(req.params.user, req.params.market, interval).then(() => {
     res.sendStatus(201);
   }).catch((err) => {
@@ -13,7 +14,9 @@ router.post('/users/:user/auto-traders/:market', (req, res, next) => {
 });
 
 router.get('/users/:user/auto-traders', (req, res) => {
-  res.json(looper.list(req.params.user));
+  const result = looper.list(req.params.user);
+  Object.keys(result).forEach(market => result[market].interval /= 1000);
+  res.json(result);
 });
 
 router.delete('/users/:user/auto-traders/:market', (req, res) => {
