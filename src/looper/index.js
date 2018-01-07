@@ -21,7 +21,9 @@ export function run(accountId, market, options) {
       unitsPerPurchase
     };
     LOOPERS[accountId][market].id = setInterval(() => {
-      trader.trade(accountId, market);
+      trader.trade(accountId, market, {
+        unitsPerPurchase
+      });
     }, interval);
     return {
       market,
