@@ -9,15 +9,18 @@ import * as looper from '../../src/looper';
 describe('router/private', function () {
   const USER = 'TEST_USER_NAME';
   const MARKET = 'poloniex';
-  const INTERVAL = 60 * 5;
+  const INTERVAL = 1000 * 60 * 5;
   let app;
   describe('run', () => {
     before(() => {
       sinon.stub(looper, 'run')
-        .withArgs(USER, MARKET, INTERVAL * 1000)
-          .onCall(0).resolves({})
+        .withArgs(USER, MARKET, {
+          interval: INTERVAL * 1000,
+          unitsPerPurchase: 0.01
+        }).onCall(0).resolves({})
           .onCall(1).resolves({})
-          .onCall(2).rejects();
+          .onCall(2).resolves({})
+          .onCall(3).rejects();
       app = express();
       app.use(bodyParser.json());
       app.use('/', privateRouter);
@@ -33,7 +36,10 @@ describe('router/private', function () {
     it('should return 201 when it call', done => {
       supertest(app)
         .post(`/users/${USER}/auto-traders/${MARKET}`)
-        .query({ interval: INTERVAL })
+        .send({
+          interval: INTERVAL,
+          unitsPerPurchase: 0.01
+        })
         .expect(201)
         .end((err, res) => {
           if (err) {
@@ -46,6 +52,10 @@ describe('router/private', function () {
     it('should return 201 when it call without interval', done => {
       supertest(app)
         .post(`/users/${USER}/auto-traders/${MARKET}`)
+        .send({
+          interval: INTERVAL,
+          unitsPerPurchase: 0.01
+        })
         .expect(201)
         .end((err, res) => {
           if (err) {
@@ -55,10 +65,12 @@ describe('router/private', function () {
           done();
         });
     });
-    it('should return 500 when it fails', done => {
+    it('should return 500 when without unitsPerPurchase', done => {
       supertest(app)
         .post(`/users/${USER}/auto-traders/${MARKET}`)
-        .query({ interval: INTERVAL })
+        .send({
+          interval: INTERVAL
+        })
         .expect(500)
         .end((err, res) => {
           if (err) {

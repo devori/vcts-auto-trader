@@ -9,6 +9,7 @@ describe('looper/index', function () {
   const ACCOUNT_ID = 'test-account';
   const MARKET = 'poloniex';
   const INTERVAL = 60 * 1000;
+  const UNITS_PER_PURCHASE = 0.01;
   let mockTrader;
   before(() => {
     mockTrader = sinon.mock(trader);
@@ -24,22 +25,34 @@ describe('looper/index', function () {
       looper.stop(ACCOUNT_ID, MARKET);
     });
     it('should return looper info when run called', done => {
-      looper.run(ACCOUNT_ID, MARKET, INTERVAL).then(info => {
+      looper.run(ACCOUNT_ID, MARKET, {
+        interval: INTERVAL,
+        unitsPerPurchase: UNITS_PER_PURCHASE
+      }).then(info => {
         expect(info.market).to.equal(MARKET);
         expect(info.interval).to.equal(INTERVAL);
         done();
       });
     });
     it('should raise exception when duplicated run called', done => {
-      looper.run(ACCOUNT_ID, MARKET, INTERVAL).then(() => {
-        looper.run(ACCOUNT_ID, MARKET, INTERVAL).catch(err => {
+      looper.run(ACCOUNT_ID, MARKET, {
+        interval: INTERVAL,
+        unitsPerPurchase: UNITS_PER_PURCHASE
+      }).then(() => {
+        looper.run(ACCOUNT_ID, MARKET, {
+          interval: INTERVAL,
+          unitsPerPurchase: UNITS_PER_PURCHASE
+        }).catch(err => {
           expect(err).to.contain('duplicated');
           done();
         });
       });
     });
     it('should reject when accountId does not exist', done => {
-      looper.run(NON_EXIST_ACCOUNT_ID, MARKET, INTERVAL).catch(err => {
+      looper.run(NON_EXIST_ACCOUNT_ID, MARKET, {
+        interval: INTERVAL,
+        unitsPerPurchase: UNITS_PER_PURCHASE
+      }).catch(err => {
         expect(err).to.equal('id does not exist')
         done();
       });
@@ -52,7 +65,10 @@ describe('looper/index', function () {
   });
   describe('list', () => {
     before(done => {
-      looper.run(ACCOUNT_ID, MARKET, INTERVAL).then(() => {
+      looper.run(ACCOUNT_ID, MARKET, {
+        interval: INTERVAL,
+        unitsPerPurchase: UNITS_PER_PURCHASE
+      }).then(() => {
         done();
       });
     });
@@ -63,6 +79,7 @@ describe('looper/index', function () {
       let info = looper.list(ACCOUNT_ID);
       expect(info[MARKET]).to.exist;
       expect(info[MARKET].interval).to.equal(INTERVAL);
+      expect(info[MARKET].unitsPerPurchase).to.equal(UNITS_PER_PURCHASE);
     });
   });
 });

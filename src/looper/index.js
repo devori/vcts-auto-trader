@@ -3,8 +3,9 @@ import * as trader from '../trader';
 
 const LOOPERS = {};
 
-export function run(accountId, market, interval) {
-  if (!accountId || !market || !interval) {
+export function run(accountId, market, options) {
+  const { interval, unitsPerPurchase } = options;
+  if (!accountId || !market || !interval || !unitsPerPurchase) {
     return Promise.reject();
   }
   if (LOOPERS[accountId] && LOOPERS[accountId][market]) {
@@ -16,7 +17,8 @@ export function run(accountId, market, interval) {
     }
     LOOPERS[accountId] = LOOPERS[accountId] || {};
     LOOPERS[accountId][market] = {
-      interval
+      interval,
+      unitsPerPurchase
     };
     LOOPERS[accountId][market].id = setInterval(() => {
       trader.trade(accountId, market);
@@ -41,7 +43,10 @@ export function list(accountId) {
     return result;
   }
   for (let market in LOOPERS[accountId]) {
-    result[market] = { interval: LOOPERS[accountId][market].interval };
+    result[market] = {
+      interval: LOOPERS[accountId][market].interval,
+      unitsPerPurchase: LOOPERS[accountId][market].unitsPerPurchase
+    };
   }
   return result;
 }

@@ -10,19 +10,23 @@ describe('trader/rule/index', function () {
   after(() => {
   });
   describe('judgeForPurchase', () => {
+    const UNITS_PER_PURCHASE = 0.01;
+    const options = {
+       unitsPerPurchase: UNITS_PER_PURCHASE
+    }
     describe('when base is BTC', () => {
       it('when last ticker ask rate < 93% of min rate asset, return BTC 0.01units and ask * 1.02', () => {
-        let result = rule.judgeForPurchase('BTC', 'ETH', [{ ask: 92 }], [{ rate: 100 }]);
-        expect(result.units).to.equal(Math.trunc(100000000 * 0.01 / (92 * 1.02)) / 100000000);
+        let result = rule.judgeForPurchase('BTC', 'ETH', [{ ask: 92 }], [{ rate: 100 }], options);
+        expect(result.units).to.equal(Math.trunc(100000000 * UNITS_PER_PURCHASE / (92 * 1.02)) / 100000000);
         expect(result.rate).to.equal(92 * 1.02);
       });
       it('when last ticker ask rate >= 93% of min rate asset, return 0 units', () => {
-        let result = rule.judgeForPurchase('BTC', 'ETH', [{ ask: 93 }], [{ rate: 100 }]);
+        let result = rule.judgeForPurchase('BTC', 'ETH', [{ ask: 93 }], [{ rate: 100 }], options);
         expect(result.units).to.equal(0);
-      })
+      });
       it('when assets are empty, should return BTC 0.01units units and ask * 1.02', () => {
-        let result = rule.judgeForPurchase('BTC', 'ETH', [{ ask: 92 }], []);
-        expect(result.units).to.equal(Math.trunc(100000000 * 0.01 / (92 * 1.02)) / 100000000);
+        let result = rule.judgeForPurchase('BTC', 'ETH', [{ ask: 92 }], [], options);
+        expect(result.units).to.equal(Math.trunc(100000000 * UNITS_PER_PURCHASE / (92 * 1.02)) / 100000000);
         expect(result.rate).to.equal(92 * 1.02);
       });
     });

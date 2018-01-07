@@ -6,7 +6,7 @@ import logger from '../util/logger';
 
 const BASE = 'BTC';
 
-export function trade(accountId, market) {
+export function trade(accountId, market, options) {
   logger.info(`Auto-Trader Start`);
   return Promise.resolve().then(() => {
     return vctsApi.syncAssets(accountId, market, BASE, BASE);
@@ -32,7 +32,7 @@ export function trade(accountId, market) {
         return p;
       }
       let currentAssets = assets[BASE][vcType] || [];
-      let judgement = rule.judgeForPurchase(BASE, vcType, [tickers[vcType]], currentAssets);
+      let judgement = rule.judgeForPurchase(BASE, vcType, [tickers[vcType]], currentAssets, options);
       logger.verbose(`${judgement.units}(units) * ${judgement.rate}(rate) = ${judgement.units * judgement.rate}`)
       if (judgement.units * judgement.rate < 0.0001) {
         logger.verbose('units * rate is less than 0.0001');

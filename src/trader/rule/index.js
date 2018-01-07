@@ -1,10 +1,6 @@
 import logger from '../../util/logger';
 
-const MAX_UNIT_COUNT = {
-  BTC: 0.005
-}
-
-export function judgeForPurchase(base, vcType, tickers, assets) {
+export function judgeForPurchase(base, vcType, tickers, assets, options) {
   logger.verbose('Judgement for purchase');
   let minAssetPrice = assets.reduce((min, cur) => {
     return min < cur.rate ? min : cur.rate
@@ -18,7 +14,7 @@ export function judgeForPurchase(base, vcType, tickers, assets) {
     return result;
   }
   result.rate = Math.trunc(lastTicker.ask * 1.02 * 100000000) / 100000000;
-  result.units = MAX_UNIT_COUNT[base] / result.rate;
+  result.units = options.unitsPerPurchase / result.rate;
   result.units = Math.trunc(result.units * 100000000) / 100000000;
 
   return result;
