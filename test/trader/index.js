@@ -15,6 +15,14 @@ describe('trader/index', function () {
 
     before(() => {
         sinon.stub(vctsApi, 'syncAssets').resolves({});
+        sinon.stub(vctsApi, 'getExchangeInfo').resolves({
+            [BASE]: {
+                [COIN_A]: {
+                    rate: { step: 0.001 },
+                    units: { step: 0.001}
+                }
+            }
+        });
         sinon.stub(vctsApi, 'getTickers').resolves({
             [COIN_A]: 'ticker',
             [COIN_B]: 'ticker',
@@ -32,6 +40,7 @@ describe('trader/index', function () {
 
     after(() => {
         vctsApi.syncAssets.restore();
+        vctsApi.getExchangeInfo.restore();
         vctsApi.getTickers.restore();
         vctsApi.getAssets.restore();
     });
@@ -77,10 +86,10 @@ describe('trader/index', function () {
             sinon.stub(vctsApi, 'buy').resolves({});
             sinon.stub(vctsApi, 'sell').resolves({});
             sinon.stub(rule, 'judgeForPurchase')
-                .withArgs(BASE, COIN_A).returns({units: 2, rate: 0.1,})
+                .withArgs(BASE, COIN_A).returns({units: 2.0012, rate: 0.1012,})
                 .withArgs(BASE, COIN_B).returns({units: 0.1, rate: 0.01,});
             sinon.stub(rule, 'judgeForSale')
-                .withArgs(BASE, COIN_A).returns({units: 2, rate: 0.1,})
+                .withArgs(BASE, COIN_A).returns({units: 2.0012, rate: 0.1012,})
                 .withArgs(BASE, COIN_B).returns({units: 0.1, rate: 0.01,});
         });
 
@@ -115,7 +124,7 @@ describe('trader/index', function () {
 
             it('should call vctsApi.buy with maxUnits info when units * rate > maxUnits', done => {
                 trader.trade(ACCOUNT_ID, MARKET, BASE, coins).then(() => {
-                    expect(vctsApi.buy.calledWith(ACCOUNT_ID, MARKET, BASE, COIN_A, 1, 0.1)).to.be.true;
+                    expect(vctsApi.buy.calledWith(ACCOUNT_ID, MARKET, BASE, COIN_A, 0.988, 0.101)).to.be.true;
                     done();
                 });
             });
@@ -152,7 +161,7 @@ describe('trader/index', function () {
 
             it('should call vctsApi.sell regardless of maxUnits', done => {
                 trader.trade(ACCOUNT_ID, MARKET, BASE, coins).then(() => {
-                    expect(vctsApi.sell.calledWith(ACCOUNT_ID, MARKET, BASE, COIN_A, 2, 0.1)).to.be.true;
+                    expect(vctsApi.sell.calledWith(ACCOUNT_ID, MARKET, BASE, COIN_A, 2.001, 0.101)).to.be.true;
                     done();
                 });
             });

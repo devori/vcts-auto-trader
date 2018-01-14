@@ -1,9 +1,10 @@
 import * as rule from './rule';
 import * as vctsApi from '../api/vcts';
-import logger from '../util/logger'
+import logger from '../util/logger';
+import math from '../util/math';
 
 export function trade(accountId, market, base, options) {
-    logger.info(`Auto-Trader Start`);
+    logger.info(`Auto-Trader Start [${market} - ${base}]`);
     return Promise.resolve().then(() => {
         return vctsApi.syncAssets(accountId, market, base, base);
     }).then(() => {
@@ -14,6 +15,12 @@ export function trade(accountId, market, base, options) {
             assets
         }));
     }).then(({tickers, assets}) => {
+        return vctsApi.getExchangeInfo(market).then(exchangeInfo => ({
+            tickers,
+            assets,
+            exchangeInfo
+        }));
+    }).then(({tickers, assets, exchangeInfo}) => {
         logger.info('Trader - Buy');
         let baseAssetUnits = assets[base][base][0].units;
         return options.coins.filter(coin => coin.purchase.inUse).reduce((p, coin) => {
@@ -23,8 +30,15 @@ export function trade(accountId, market, base, options) {
 
             const {name} = coin;
             let {units, rate} = rule.judgeForPurchase(base, name, [tickers[name]], assets[base][name], {maxBaseUnits: options.maxUnits});
+            logger.verbose(`Purchase Judgement[${name}] : ${units}(units) ${rate}(rate)`);
             if (units * rate > options.maxUnits) {
                 units = options.maxUnits / rate;
+            }
+
+            if (exchangeInfo[base] && exchangeInfo[base][name]) {
+                const {rate: {step: rateStep}, units: {step: unitsStep}} = exchangeInfo[base][name];
+                units = math.truncRemainder(units, unitsStep);
+                rate = math.truncRemainder(rate, rateStep);
             }
 
             if (units * rate < options.minUnits) {
@@ -36,21 +50,31 @@ export function trade(accountId, market, base, options) {
             return p.then(vctsApi.buy(accountId, market, base, name, units, rate));
         }, Promise.resolve()).then(() => {
             logger.info('Trader - Buy End');
-            return tickers;
+            return {
+                tickers,
+                exchangeInfo
+            };
         });
-    }).then(tickers => {
+    }).then(({tickers, exchangeInfo}) => {
         return vctsApi.getAssets(accountId, market).then(assets => ({
             tickers,
-            assets
+            assets,
+            exchangeInfo
         }));
-    }).then(({tickers, assets}) => {
+    }).then(({tickers, assets, exchangeInfo}) => {
         logger.info('Trader - Sell');
         return options.coins.filter(coin => coin.sale.inUse).reduce((p, coin) => {
             const {name} = coin;
             let {units, rate} = rule.judgeForSale(base, name, [tickers[name]], assets[base][name]);
-
+            logger.verbose(`Sale Judgement[${name}] : ${units}(units) ${rate}(rate)`);
             if (units * rate < options.minUnits) {
                 return p;
+            }
+
+            if (exchangeInfo[base] && exchangeInfo[base][name]) {
+                const {rate: {step: rateStep}, units: {step: unitsStep}} = exchangeInfo[base][name];
+                units = math.truncRemainder(units, unitsStep);
+                rate = math.truncRemainder(rate, rateStep);
             }
 
             return p.then(vctsApi.sell(accountId, market, base, name, units, rate));

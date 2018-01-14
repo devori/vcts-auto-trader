@@ -25,21 +25,24 @@ export function run(accountId, market, base, options) {
         }
 
         LOOPERS[accountId] = LOOPERS[accountId] || [];
-        LOOPERS[accountId].push({
+
+        const looper = {
             market,
             base,
             interval,
             minUnits,
             maxUnits,
-            coins: defaultsDeep([], coins),
-            id: setInterval(() => {
-                trader.trade(accountId, market, base, {
-                    minUnits,
-                    maxUnits,
-                    coins: LOOPERS[accountId][market][base].coins
-                });
-            }, interval)
-        });
+            coins: defaultsDeep([], coins)
+        };
+        looper.id = setInterval(() => {
+            trader.trade(accountId, market, base, {
+                minUnits,
+                maxUnits,
+                coins: looper.coins
+            });
+        }, interval);
+
+        LOOPERS[accountId].push(looper);
 
         return true;
     });
