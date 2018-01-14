@@ -49,6 +49,8 @@ describe('router/private', function () {
                 .post(`/users/${USER}/auto-traders/${MARKET_A}/${BASE}`)
                 .send({
                     interval: INTERVAL,
+                    minUnits: 1,
+                    maxUnits: 2,
                     coins: 'coins',
                 })
                 .expect(201)
@@ -66,6 +68,8 @@ describe('router/private', function () {
                 .post(`/users/${USER}/auto-traders/${MARKET_A}/${BASE}`)
                 .send({
                     interval: INTERVAL,
+                    minUnits: 1,
+                    maxUnits: 2,
                     coins: 'hello',
                 })
                 .expect(201)
@@ -76,6 +80,33 @@ describe('router/private', function () {
                     }
                     expect(repository.saveAutoTraderInfo.calledWith(USER, MARKET_A, BASE, {
                         interval: INTERVAL,
+                        minUnits: 1,
+                        maxUnits: 2,
+                        coins: 'hello',
+                    })).to.be.true;
+                    done();
+                });
+        });
+
+        it('should call looper.run when it call', done => {
+            supertest(app)
+                .post(`/users/${USER}/auto-traders/${MARKET_A}/${BASE}`)
+                .send({
+                    interval: INTERVAL,
+                    minUnits: 1,
+                    maxUnits: 2,
+                    coins: 'hello',
+                })
+                .expect(201)
+                .end((err) => {
+                    if (err) {
+                        expect.fail('', '', err);
+                        return;
+                    }
+                    expect(looper.run.calledWith(USER, MARKET_A, BASE, {
+                        interval: INTERVAL,
+                        minUnits: 1,
+                        maxUnits: 2,
                         coins: 'hello',
                     })).to.be.true;
                     done();
@@ -86,7 +117,9 @@ describe('router/private', function () {
             supertest(app)
                 .post(`/users/${USER}/auto-traders/${MARKET_A}/${BASE}`)
                 .send({
-                    interval: INTERVAL
+                    interval: INTERVAL,
+                    minUnits: 1,
+                    maxUnits: 2,
                 })
                 .expect(500)
                 .end((err) => {
@@ -102,6 +135,8 @@ describe('router/private', function () {
             supertest(app)
                 .post(`/users/${USER}/auto-traders/${MARKET_A}/${BASE}`)
                 .send({
+                    minUnits: 1,
+                    maxUnits: 2,
                     coins: 'hello'
                 })
                 .expect(500)
@@ -119,6 +154,8 @@ describe('router/private', function () {
                 .post(`/users/${USER}/auto-traders/${MARKET_A}/${BASE}`)
                 .send({
                     interval: 999,
+                    minUnits: 1,
+                    maxUnits: 2,
                     coins: 0.01
                 })
                 .expect(500)

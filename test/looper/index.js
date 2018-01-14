@@ -11,26 +11,27 @@ describe('looper/index', function () {
     const BASE = 'BTC';
     const INTERVAL = 60 * 1000;
 
-    let mockTrader;
     before(() => {
-        mockTrader = sinon.mock(trader);
         sinon.stub(vctsApi, 'findUser')
             .withArgs(ACCOUNT_ID).returns(Promise.resolve({id: ACCOUNT_ID}))
             .withArgs(NON_EXIST_ACCOUNT_ID).returns(Promise.resolve(null));
     });
 
-    after(() => {
-        mockTrader.restore();
-    });
-
     describe('run', () => {
+        beforeEach(() => {
+            sinon.stub(trader, 'trade');
+        });
+
         afterEach(() => {
+            trader.trade.restore();
             looper.stop(ACCOUNT_ID, MARKET, BASE);
         });
 
         it('should return true info when it calls', done => {
             looper.run(ACCOUNT_ID, MARKET, BASE, {
                 interval: INTERVAL,
+                minUnits: 1,
+                maxUnits: 2,
                 coins: [
                     'hello'
                 ]
@@ -43,6 +44,8 @@ describe('looper/index', function () {
         it('should raise exception when duplicated run called', done => {
             looper.run(ACCOUNT_ID, MARKET, BASE, {
                 interval: INTERVAL,
+                minUnits: 1,
+                maxUnits: 2,
                 coins: []
             }).then(() => {
                 looper.run(ACCOUNT_ID, MARKET, BASE, {
@@ -58,6 +61,8 @@ describe('looper/index', function () {
         it('should reject when accountId does not exist', done => {
             looper.run(NON_EXIST_ACCOUNT_ID, MARKET, BASE, {
                 interval: INTERVAL,
+                minUnits: 1,
+                maxUnits: 2,
                 coins: [],
             }).catch(err => {
                 expect(err).to.equal('id does not exist');
@@ -77,6 +82,8 @@ describe('looper/index', function () {
         before(done => {
             looper.run(ACCOUNT_ID, MARKET, BASE, {
                 interval: INTERVAL,
+                minUnits: 1,
+                maxUnits: 2,
                 coins: ['hello'],
             }).then(() => {
                 done();
@@ -93,6 +100,8 @@ describe('looper/index', function () {
             expect(traders[0].market).to.equal(MARKET);
             expect(traders[0].base).to.equal(BASE);
             expect(traders[0].interval).to.equal(INTERVAL);
+            expect(traders[0].minUnits).to.equal(1);
+            expect(traders[0].maxUnits).to.equal(2);
             expect(traders[0].coins).to.deep.equal(['hello']);
         });
     });

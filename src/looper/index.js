@@ -5,14 +5,18 @@ import * as trader from '../trader';
 const LOOPERS = {};
 
 export function run(accountId, market, base, options) {
-    const {interval, coins} = options;
+    const {interval, minUnits, maxUnits, coins} = options;
 
-    if (!accountId || !market || !base || !interval || !coins) {
+    if (!accountId || !market || !base) {
         return Promise.reject();
     }
 
     if (LOOPERS[accountId] && LOOPERS[accountId].some(looper => looper.market === market && looper.base === base)) {
         return Promise.reject(`${accountId} - ${market} duplicated`);
+    }
+
+    if (!interval || !minUnits || !maxUnits || !coins) {
+        return Promise.reject();
     }
 
     return vctsApi.findUser(accountId).then(user => {
@@ -25,9 +29,15 @@ export function run(accountId, market, base, options) {
             market,
             base,
             interval,
+            minUnits,
+            maxUnits,
             coins: defaultsDeep([], coins),
             id: setInterval(() => {
-                trader.trade(accountId, market, base, LOOPERS[accountId][market][base].coins);
+                trader.trade(accountId, market, base, {
+                    minUnits,
+                    maxUnits,
+                    coins: LOOPERS[accountId][market][base].coins
+                });
             }, interval)
         });
 

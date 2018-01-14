@@ -6,8 +6,9 @@ import repository from '../repository';
 const router = express.Router();
 
 router.post('/users/:user/auto-traders/:market/:base', (req, res, next) => {
-    let {interval, coins} = req.body;
-    if (!interval || interval < 1000 || !coins) {
+    const {interval, minUnits, maxUnits, coins} = req.body;
+
+    if (!interval || interval < 1000 || !minUnits || !maxUnits || !coins) {
         res.sendStatus(500);
         return;
     }
@@ -15,11 +16,15 @@ router.post('/users/:user/auto-traders/:market/:base', (req, res, next) => {
     const {user, market, base} = req.params;
     repository.saveAutoTraderInfo(user, market, base, {
         interval,
+        minUnits,
+        maxUnits,
         coins,
     });
 
     looper.run(user, market, base, {
         interval,
+        minUnits,
+        maxUnits,
         coins,
     }).then(() => {
         res.sendStatus(201);
@@ -36,7 +41,6 @@ router.get('/users/:user/auto-traders', (req, res) => {
         return trader;
     });
 
-    defaultsDeep(result, runningTraders);
     res.json(result);
 });
 

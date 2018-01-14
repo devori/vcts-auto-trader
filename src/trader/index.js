@@ -17,7 +17,7 @@ export function trade(accountId, market, base, options) {
         logger.info('Trader - Buy');
         let baseAssetUnits = assets[base][base][0].units;
         return options.coins.filter(coin => coin.purchase.inUse).reduce((p, coin) => {
-            if (baseAssetUnits < options.coins.minUnits) {
+            if (baseAssetUnits < options.minUnits) {
                 return p;
             }
 

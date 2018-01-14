@@ -94,8 +94,8 @@ describe('trader/index', function () {
         describe('buy', () => {
             it('should call rule.judgeForPurchase with tickers of coin and options', done => {
                 trader.trade(ACCOUNT_ID, MARKET, BASE, coins).then(() => {
-                    expect(rule.judgeForPurchase.calledTwice).to.be.true;
-                    expect(rule.judgeForPurchase.firstCall.calledWithExactly(
+                    expect(rule.judgeForPurchase.calledOnce).to.be.true;
+                    expect(rule.judgeForPurchase.calledWithExactly(
                         BASE,
                         COIN_A,
                         ['ticker'],
