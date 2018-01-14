@@ -23,6 +23,7 @@
     "async": "^2.5.0",
     "axios": "^0.16.2",
     "babel-cli": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-polyfill": "^6.23.0",
     "babel-preset-env": "^1.6.0",
     "babel-register": "^6.24.1",
@@ -37,6 +38,8 @@
   "dependencies": {
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
+    "lodash": "^4.17.4",
+    "lowdb": "^1.0.0",
     "winston": "^2.4.0",
     "winston-daily-rotate-file": "^1.7.2"
   }

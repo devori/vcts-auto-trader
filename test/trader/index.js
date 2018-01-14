@@ -1,42 +1,161 @@
 import sinon from 'sinon';
-import { expect, should } from 'chai';
+import {expect, should} from 'chai';
 import * as trader from '../../src/trader';
+import * as rule from '../../src/trader/rule';
 import * as vctsApi from '../../src/api/vcts';
-import * as rule from '../../src/trader/rule'
 
 describe('trader/index', function () {
-  const ACCOUNT_ID = 'test-user';
-  const MARKET = 'poloniex';
-  before(() => {
-    sinon.stub(vctsApi, 'getTickers')
-      .withArgs(MARKET).returns(Promise.resolve({
-        BTC: {
-          ETH: {
-            ask: 1,
-            bid: 0.99
-          }
-        }
-      }))
-    sinon.stub(vctsApi, 'getAssets')
-      .withArgs(ACCOUNT_ID, MARKET).returns(Promise.resolve({
-        BTC: {
-          BTC: [{ units: 10 }],
-          ETH: [{ units: 2, rate: 0.1, totla: 0.2 }]
-        }
-      }));
-    sinon.stub(vctsApi, 'buy').returns(Promise.resolve());
-    sinon.stub(vctsApi, 'sell').returns(Promise.resolve());
-    sinon.stub(rule, 'judgeForPurchase').returns({ units: 0, rate: 0 });
-    sinon.stub(rule, 'judgeForSale').returns({ units: 0, rate: 1000000000 });
-  });
-  after(() => {
-    vctsApi.getTickers.restore();
-    vctsApi.getAssets.restore();
-    vctsApi.buy.restore();
-    vctsApi.sell.restore();
-    rule.judgeForPurchase.restore();
-    rule.judgeForSale.restore();
-  })
-  describe('trade', () => {
-  });
+
+    const ACCOUNT_ID = 'account';
+    const MARKET = 'market';
+    const BASE = 'base';
+    const COIN_A = 'A';
+    const COIN_B = 'B';
+    const COIN_C = 'C';
+
+    before(() => {
+        sinon.stub(vctsApi, 'syncAssets').resolves({});
+        sinon.stub(vctsApi, 'getTickers').resolves({
+            [COIN_A]: 'ticker',
+            [COIN_B]: 'ticker',
+            [COIN_C]: 'ticker',
+        });
+        sinon.stub(vctsApi, 'getAssets').resolves({
+            [BASE]: {
+                [BASE]: [{units: 0.1}],
+                [COIN_A]: [{units: 2}],
+                [COIN_B]: [{units: 2}],
+                [COIN_C]: [{units: 2}],
+            },
+        });
+    });
+
+    after(() => {
+        vctsApi.syncAssets.restore();
+        vctsApi.getTickers.restore();
+        vctsApi.getAssets.restore();
+    });
+
+    describe('trade', () => {
+        let coins;
+
+        beforeEach(() => {
+            coins = {
+                minUnits: 0.01,
+                maxUnits: 0.1,
+                coins: [
+                    {
+                        name: COIN_A,
+                        purchase: {
+                            inUse: true,
+                        },
+                        sale: {
+                            inUse: true,
+                        }
+                    },
+                    {
+                        name: COIN_B,
+                        purchase: {
+                            inUse: true,
+                        },
+                        sale: {
+                            inUse: true,
+                        }
+                    },
+                    {
+                        name: COIN_C,
+                        purchase: {
+                            inUse: false,
+                        },
+                        sale: {
+                            inUse: false,
+                        }
+                    }
+                ]
+            };
+
+            sinon.stub(vctsApi, 'buy').resolves({});
+            sinon.stub(vctsApi, 'sell').resolves({});
+            sinon.stub(rule, 'judgeForPurchase')
+                .withArgs(BASE, COIN_A).returns({units: 2, rate: 0.1,})
+                .withArgs(BASE, COIN_B).returns({units: 0.1, rate: 0.01,});
+            sinon.stub(rule, 'judgeForSale')
+                .withArgs(BASE, COIN_A).returns({units: 2, rate: 0.1,})
+                .withArgs(BASE, COIN_B).returns({units: 0.1, rate: 0.01,});
+        });
+
+        afterEach(() => {
+            vctsApi.buy.restore();
+            vctsApi.sell.restore();
+            rule.judgeForPurchase.restore();
+            rule.judgeForSale.restore();
+        });
+
+        describe('buy', () => {
+            it('should call rule.judgeForPurchase with tickers of coin and options', done => {
+                trader.trade(ACCOUNT_ID, MARKET, BASE, coins).then(() => {
+                    expect(rule.judgeForPurchase.calledTwice).to.be.true;
+                    expect(rule.judgeForPurchase.firstCall.calledWithExactly(
+                        BASE,
+                        COIN_A,
+                        ['ticker'],
+                        [{units: 2}],
+                        {maxBaseUnits: 0.1}
+                    )).to.be.true;
+                    done();
+                });
+            });
+
+            it('should call vctsApi.buy when units * rate >= minUnits', done => {
+                trader.trade(ACCOUNT_ID, MARKET, BASE, coins).then(() => {
+                    expect(vctsApi.buy.calledOnce).to.be.true;
+                    done();
+                });
+            });
+
+            it('should call vctsApi.buy with maxUnits info when units * rate > maxUnits', done => {
+                trader.trade(ACCOUNT_ID, MARKET, BASE, coins).then(() => {
+                    expect(vctsApi.buy.calledWith(ACCOUNT_ID, MARKET, BASE, COIN_A, 1, 0.1)).to.be.true;
+                    done();
+                });
+            });
+
+            it('should not call buy api when base unit is less than min units', done => {
+                coins.minUnits = 0.15;
+                trader.trade(ACCOUNT_ID, MARKET, BASE, coins).then(() => {
+                    expect(vctsApi.buy.called).to.be.false;
+                    done();
+                });
+            });
+        });
+
+        describe('sell', () => {
+            it('should call rule.judgeForSale with tickers of coin and options', done => {
+                trader.trade(ACCOUNT_ID, MARKET, BASE, coins).then(() => {
+                    expect(rule.judgeForSale.calledTwice).to.be.true;
+                    expect(rule.judgeForSale.firstCall.calledWithExactly(
+                        BASE,
+                        COIN_A,
+                        ['ticker'],
+                        [{units: 2}]
+                    )).to.be.true;
+                    done();
+                });
+            });
+
+            it('should call vctsApi.sell when units * rate >= minUnits', done => {
+                trader.trade(ACCOUNT_ID, MARKET, BASE, coins).then(() => {
+                    expect(vctsApi.sell.calledOnce).to.be.true;
+                    done();
+                });
+            });
+
+            it('should call vctsApi.sell regardless of maxUnits', done => {
+                trader.trade(ACCOUNT_ID, MARKET, BASE, coins).then(() => {
+                    expect(vctsApi.sell.calledWith(ACCOUNT_ID, MARKET, BASE, COIN_A, 2, 0.1)).to.be.true;
+                    done();
+                });
+            });
+        });
+    });
 });

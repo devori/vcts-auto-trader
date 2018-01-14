@@ -1,34 +1,49 @@
 import express from 'express';
+import defaultsDeep from 'lodash/defaultsDeep';
 import * as looper from '../looper';
+import repository from '../repository';
 
 const router = express.Router();
 
-router.post('/users/:user/auto-traders/:market', (req, res, next) => {
-  let { unitsPerPurchase, interval = 300 } = req.body;
-  if (!unitsPerPurchase) {
-    res.sendStatus(500);
-    return;
-  }
-  interval *= 1000;
-  looper.run(req.params.user, req.params.market, {
-    interval,
-    unitsPerPurchase,
-  }).then(() => {
-    res.sendStatus(201);
-  }).catch((err) => {
-    next(err);
-  });
+router.post('/users/:user/auto-traders/:market/:base', (req, res, next) => {
+    let {interval, coins} = req.body;
+    if (!interval || interval < 1000 || !coins) {
+        res.sendStatus(500);
+        return;
+    }
+
+    const {user, market, base} = req.params;
+    repository.saveAutoTraderInfo(user, market, base, {
+        interval,
+        coins,
+    });
+
+    looper.run(user, market, base, {
+        interval,
+        coins,
+    }).then(() => {
+        res.sendStatus(201);
+    }).catch((err) => {
+        next(err);
+    });
 });
 
 router.get('/users/:user/auto-traders', (req, res) => {
-  const result = looper.list(req.params.user);
-  Object.keys(result).forEach(market => result[market].interval /= 1000);
-  res.json(result);
+    const {user} = req.params;
+    const runningTraders = looper.list(user);
+    const result = repository.getAutoTraders(user).map(trader => {
+        trader.isRunning = runningTraders.some(({market, base}) => market === trader.market && base === trader.base);
+        return trader;
+    });
+
+    defaultsDeep(result, runningTraders);
+    res.json(result);
 });
 
-router.delete('/users/:user/auto-traders/:market', (req, res) => {
-  looper.stop(req.params.user, req.params.market);
-  res.sendStatus(200);
+router.delete('/users/:user/auto-traders/:market/:base', (req, res) => {
+    const {user, market, base} = req.params;
+    looper.stop(user, market, base);
+    res.sendStatus(200);
 });
 
 export default router;
