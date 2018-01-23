@@ -107,9 +107,11 @@ describe('trader/index', function () {
                     expect(rule.judgeForPurchase.calledWithExactly(
                         BASE,
                         COIN_A,
-                        ['ticker'],
-                        [{units: 2}],
-                        {maxBaseUnits: 0.1}
+                        {
+                            tickers: ['ticker'],
+                            assets: [{units: 2}],
+                            maxBaseUnits: 0.1,
+                        }
                     )).to.be.true;
                     done();
                 });
@@ -145,8 +147,10 @@ describe('trader/index', function () {
                     expect(rule.judgeForSale.firstCall.calledWithExactly(
                         BASE,
                         COIN_A,
-                        ['ticker'],
-                        [{units: 2}]
+                        {
+                            tickers: ['ticker'],
+                            assets: [{units: 2}],
+                        }
                     )).to.be.true;
                     done();
                 });

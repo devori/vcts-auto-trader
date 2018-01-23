@@ -30,7 +30,11 @@ export function trade(accountId, market, base, options) {
                 }
 
                 const {name} = coin;
-                let {units, rate} = rule.judgeForPurchase(base, name, [tickers[name]], assets[base][name], {maxBaseUnits: options.maxUnits});
+                let {units, rate} = rule.judgeForPurchase(base, name, {
+                    tickers: [tickers[name]],
+                    assets: assets[base][name],
+                    maxBaseUnits: options.maxUnits
+                });
                 logger.verbose(`Purchase Judgement[${name}] : ${units}(units) ${rate}(rate)`);
                 if (units * rate > options.maxUnits) {
                     units = options.maxUnits / rate;
@@ -71,7 +75,10 @@ export function trade(accountId, market, base, options) {
         return options.coins.filter(coin => coin.sale.inUse).reduce((p, coin) => {
             try {
                 const {name} = coin;
-                let {units, rate} = rule.judgeForSale(base, name, [tickers[name]], assets[base][name]);
+                let {units, rate} = rule.judgeForSale(base, name, {
+                    tickers: [tickers[name]],
+                    assets: assets[base][name],
+                });
                 logger.verbose(`Sale Judgement[${name}] : ${units}(units) ${rate}(rate)`);
                 if (units * rate < options.minUnits) {
                     return p;

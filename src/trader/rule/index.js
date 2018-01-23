@@ -1,6 +1,6 @@
 import logger from '../../util/logger';
 
-export function judgeForPurchase(base, vcType, tickers, assets = [], options) {
+export function judgeForPurchase(base, vcType, { tickers, assets = [], maxBaseUnits}) {
   logger.verbose('Judgement for purchase');
   let minAssetPrice = assets.reduce((min, cur) => {
     return min < cur.rate ? min : cur.rate
@@ -14,13 +14,13 @@ export function judgeForPurchase(base, vcType, tickers, assets = [], options) {
     return result;
   }
   result.rate = Math.trunc(lastTicker.ask * 1.02 * 100000000) / 100000000;
-  result.units = options.maxBaseUnits / result.rate;
+  result.units = maxBaseUnits / result.rate;
   result.units = Math.trunc(result.units * 100000000) / 100000000;
 
   return result;
 }
 
-export function judgeForSale(base, vcType, tickers, assets = []) {
+export function judgeForSale(base, vcType, {tickers, assets = []}) {
   logger.verbose('Judgement for sale');
   let lastTicker = tickers[tickers.length - 1];
   let threshold =  lastTicker.bid * 0.93;
