@@ -5,7 +5,7 @@ import * as trader from '../trader';
 const LOOPERS = {};
 
 export function run(accountId, market, base, options) {
-    const {interval, minUnits, maxUnits, coins} = options;
+    const {interval, minUnits, maxUnits, coins, rule} = options;
 
     if (!accountId || !market || !base) {
         return Promise.reject();
@@ -32,13 +32,16 @@ export function run(accountId, market, base, options) {
             interval,
             minUnits,
             maxUnits,
-            coins: defaultsDeep([], coins)
+            rule,
+            coins: defaultsDeep([], coins),
         };
         looper.id = setInterval(() => {
             trader.trade(accountId, market, base, {
                 minUnits,
                 maxUnits,
                 coins: looper.coins
+            }, {
+                rule
             });
         }, interval);
 

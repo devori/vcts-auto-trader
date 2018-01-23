@@ -1,12 +1,20 @@
 import express from 'express';
-import defaultsDeep from 'lodash/defaultsDeep';
 import * as looper from '../looper';
 import repository from '../repository';
 
 const router = express.Router();
 
 router.post('/users/:user/auto-traders/:market/:base', (req, res, next) => {
-    const {interval, minUnits, maxUnits, coins} = req.body;
+    const {
+        interval, minUnits, maxUnits, coins,
+        rule = {
+            name: 'default',
+            options: {
+                rateForPurchase: 0.07,
+                rateForSale: 0.07,
+            },
+        },
+    } = req.body;
 
     if (!interval || interval < 1000 || !minUnits || !maxUnits || !coins) {
         res.sendStatus(500);
@@ -19,6 +27,7 @@ router.post('/users/:user/auto-traders/:market/:base', (req, res, next) => {
         minUnits,
         maxUnits,
         coins,
+        rule,
     });
 
     looper.run(user, market, base, {

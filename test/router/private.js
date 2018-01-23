@@ -71,6 +71,13 @@ describe('router/private', function () {
                     minUnits: 1,
                     maxUnits: 2,
                     coins: 'hello',
+                    rule: {
+                        name: 'hello',
+                        options: {
+                            rateForPurchase: 0.05,
+                            rateForSale: 0.05,
+                        },
+                    }
                 })
                 .expect(201)
                 .end((err) => {
@@ -83,6 +90,45 @@ describe('router/private', function () {
                         minUnits: 1,
                         maxUnits: 2,
                         coins: 'hello',
+                        rule: {
+                            name: 'hello',
+                            options: {
+                                rateForPurchase: 0.05,
+                                rateForSale: 0.05,
+                            },
+                        }
+                    })).to.be.true;
+                    done();
+                });
+        });
+
+        it('should call saveAutoTraderInfo with default rule when it call without rule', done => {
+            supertest(app)
+                .post(`/users/${USER}/auto-traders/${MARKET_A}/${BASE}`)
+                .send({
+                    interval: INTERVAL,
+                    minUnits: 1,
+                    maxUnits: 2,
+                    coins: 'hello',
+                })
+                .expect(201)
+                .end((err) => {
+                    if (err) {
+                        expect.fail('', '', err);
+                        return;
+                    }
+                    expect(repository.saveAutoTraderInfo.calledWith(USER, MARKET_A, BASE, {
+                        interval: INTERVAL,
+                        minUnits: 1,
+                        maxUnits: 2,
+                        coins: 'hello',
+                        rule: {
+                            name: 'default',
+                            options: {
+                                rateForPurchase: 0.07,
+                                rateForSale: 0.07,
+                            },
+                        }
                     })).to.be.true;
                     done();
                 });

@@ -18,8 +18,8 @@ describe('trader/index', function () {
         sinon.stub(vctsApi, 'getExchangeInfo').resolves({
             [BASE]: {
                 [COIN_A]: {
-                    rate: { step: 0.001 },
-                    units: { step: 0.001}
+                    rate: {step: 0.001},
+                    units: {step: 0.001}
                 }
             }
         });
@@ -46,12 +46,19 @@ describe('trader/index', function () {
     });
 
     describe('trade', () => {
-        let coins;
+        let options;
 
         beforeEach(() => {
-            coins = {
+            options = {
                 minUnits: 0.01,
                 maxUnits: 0.1,
+                rule: {
+                    name: 'default',
+                    options: {
+                        rateForPurchase: 0.07,
+                        rateForSale: 0.07,
+                    }
+                },
                 coins: [
                     {
                         name: COIN_A,
@@ -102,7 +109,7 @@ describe('trader/index', function () {
 
         describe('buy', () => {
             it('should call rule.judgeForPurchase with tickers of coin and options', done => {
-                trader.trade(ACCOUNT_ID, MARKET, BASE, coins).then(() => {
+                trader.trade(ACCOUNT_ID, MARKET, BASE, options).then(() => {
                     expect(rule.judgeForPurchase.calledOnce).to.be.true;
                     expect(rule.judgeForPurchase.calledWithExactly(
                         BASE,
@@ -111,6 +118,10 @@ describe('trader/index', function () {
                             tickers: ['ticker'],
                             assets: [{units: 2}],
                             maxBaseUnits: 0.1,
+                        },
+                        {
+                            rateForPurchase: 0.07,
+                            rateForSale: 0.07,
                         }
                     )).to.be.true;
                     done();
@@ -118,22 +129,22 @@ describe('trader/index', function () {
             });
 
             it('should call vctsApi.buy when units * rate >= minUnits', done => {
-                trader.trade(ACCOUNT_ID, MARKET, BASE, coins).then(() => {
+                trader.trade(ACCOUNT_ID, MARKET, BASE, options).then(() => {
                     expect(vctsApi.buy.calledOnce).to.be.true;
                     done();
                 });
             });
 
             it('should call vctsApi.buy with maxUnits info when units * rate > maxUnits', done => {
-                trader.trade(ACCOUNT_ID, MARKET, BASE, coins).then(() => {
+                trader.trade(ACCOUNT_ID, MARKET, BASE, options).then(() => {
                     expect(vctsApi.buy.calledWith(ACCOUNT_ID, MARKET, BASE, COIN_A, 0.988, 0.101)).to.be.true;
                     done();
                 });
             });
 
             it('should not call buy api when base unit is less than min units', done => {
-                coins.minUnits = 0.15;
-                trader.trade(ACCOUNT_ID, MARKET, BASE, coins).then(() => {
+                options.minUnits = 0.15;
+                trader.trade(ACCOUNT_ID, MARKET, BASE, options).then(() => {
                     expect(vctsApi.buy.called).to.be.false;
                     done();
                 });
@@ -142,7 +153,7 @@ describe('trader/index', function () {
 
         describe('sell', () => {
             it('should call rule.judgeForSale with tickers of coin and options', done => {
-                trader.trade(ACCOUNT_ID, MARKET, BASE, coins).then(() => {
+                trader.trade(ACCOUNT_ID, MARKET, BASE, options).then(() => {
                     expect(rule.judgeForSale.calledTwice).to.be.true;
                     expect(rule.judgeForSale.firstCall.calledWithExactly(
                         BASE,
@@ -150,6 +161,10 @@ describe('trader/index', function () {
                         {
                             tickers: ['ticker'],
                             assets: [{units: 2}],
+                        },
+                        {
+                            rateForPurchase: 0.07,
+                            rateForSale: 0.07,
                         }
                     )).to.be.true;
                     done();
@@ -157,14 +172,14 @@ describe('trader/index', function () {
             });
 
             it('should call vctsApi.sell when units * rate >= minUnits', done => {
-                trader.trade(ACCOUNT_ID, MARKET, BASE, coins).then(() => {
+                trader.trade(ACCOUNT_ID, MARKET, BASE, options).then(() => {
                     expect(vctsApi.sell.calledOnce).to.be.true;
                     done();
                 });
             });
 
             it('should call vctsApi.sell regardless of maxUnits', done => {
-                trader.trade(ACCOUNT_ID, MARKET, BASE, coins).then(() => {
+                trader.trade(ACCOUNT_ID, MARKET, BASE, options).then(() => {
                     expect(vctsApi.sell.calledWith(ACCOUNT_ID, MARKET, BASE, COIN_A, 2.001, 0.101)).to.be.true;
                     done();
                 });

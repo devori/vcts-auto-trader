@@ -34,7 +34,7 @@ export function trade(accountId, market, base, options) {
                     tickers: [tickers[name]],
                     assets: assets[base][name],
                     maxBaseUnits: options.maxUnits
-                });
+                }, options.rule.options);
                 logger.verbose(`Purchase Judgement[${name}] : ${units}(units) ${rate}(rate)`);
                 if (units * rate > options.maxUnits) {
                     units = options.maxUnits / rate;
@@ -78,7 +78,7 @@ export function trade(accountId, market, base, options) {
                 let {units, rate} = rule.judgeForSale(base, name, {
                     tickers: [tickers[name]],
                     assets: assets[base][name],
-                });
+                }, options.rule.options);
                 logger.verbose(`Sale Judgement[${name}] : ${units}(units) ${rate}(rate)`);
                 if (units * rate < options.minUnits) {
                     return p;
