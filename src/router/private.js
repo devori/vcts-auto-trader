@@ -35,6 +35,7 @@ router.post('/users/:user/auto-traders/:market/:base', (req, res, next) => {
         minUnits,
         maxUnits,
         coins,
+        rule,
     }).then(() => {
         res.sendStatus(201);
     }).catch((err) => {
