@@ -7,8 +7,8 @@ const LOOPERS = {};
 export function run(accountId, market, base, options) {
     const {interval, minUnits, maxUnits, coins, rule} = options;
 
-    if (!accountId || !market || !base) {
-        return Promise.reject();
+    if (!accountId || !market || !base || !rule) {
+        return Promise.reject('error');
     }
 
     if (LOOPERS[accountId] && LOOPERS[accountId].some(looper => looper.market === market && looper.base === base)) {
@@ -39,9 +39,8 @@ export function run(accountId, market, base, options) {
             trader.trade(accountId, market, base, {
                 minUnits,
                 maxUnits,
-                coins: looper.coins
-            }, {
-                rule
+                coins: looper.coins,
+                rule,
             });
         }, interval);
 

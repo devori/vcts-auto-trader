@@ -34,10 +34,52 @@ describe('looper/index', function () {
                 maxUnits: 2,
                 coins: [
                     'hello'
-                ]
+                ],
+                rule: {},
             }).then(result => {
                 expect(result).to.be.true;
                 done();
+            });
+        });
+
+        it('should call trader with args info when it calls', done => {
+            looper.run(ACCOUNT_ID, MARKET, BASE, {
+                interval: 1,
+                minUnits: 1,
+                maxUnits: 2,
+                coins: [
+                    'hello'
+                ],
+                rule: {
+                    name: 'default',
+                    options: {
+                        rateForPurchase: 0.05,
+                        rateForSale: 0.05,
+                    },
+                },
+            }).then(() => {
+                setTimeout(() => {
+                    expect(trader.trade.calledWith(
+                        ACCOUNT_ID,
+                        MARKET,
+                        BASE,
+                        {
+                            minUnits: 1,
+                            maxUnits: 2,
+                            coins: [
+                                'hello'
+                            ],
+                            rule: {
+                                name: 'default',
+                                options: {
+                                    rateForPurchase: 0.05,
+                                    rateForSale: 0.05,
+                                },
+                            },
+                        }
+                    )).to.be.true;
+                    done();
+                }, 2);
             });
         });
 
@@ -46,11 +88,13 @@ describe('looper/index', function () {
                 interval: INTERVAL,
                 minUnits: 1,
                 maxUnits: 2,
-                coins: []
+                coins: [],
+                rule: {},
             }).then(() => {
                 looper.run(ACCOUNT_ID, MARKET, BASE, {
                     interval: INTERVAL,
                     coins: [],
+                    rule: {},
                 }).catch(err => {
                     expect(err).to.contain('duplicated');
                     done();
@@ -64,8 +108,22 @@ describe('looper/index', function () {
                 minUnits: 1,
                 maxUnits: 2,
                 coins: [],
+                rule: {},
             }).catch(err => {
                 expect(err).to.equal('id does not exist');
+                done();
+            });
+        });
+
+
+        it('should reject when rule does not exist', done => {
+            looper.run(ACCOUNT_ID, MARKET, BASE, {
+                interval: INTERVAL,
+                minUnits: 1,
+                maxUnits: 2,
+                coins: [],
+            }).catch(err => {
+                expect(err).to.equal('error');
                 done();
             });
         });
@@ -85,6 +143,13 @@ describe('looper/index', function () {
                 minUnits: 1,
                 maxUnits: 2,
                 coins: ['hello'],
+                rule: {
+                    name: 'default',
+                    options: {
+                        rateForPurchase: 0.05,
+                        rateForSale: 0.05,
+                    },
+                },
             }).then(() => {
                 done();
             });
@@ -103,6 +168,13 @@ describe('looper/index', function () {
             expect(traders[0].minUnits).to.equal(1);
             expect(traders[0].maxUnits).to.equal(2);
             expect(traders[0].coins).to.deep.equal(['hello']);
+            expect(traders[0].rule).to.deep.equal({
+                name: 'default',
+                options: {
+                    rateForPurchase: 0.05,
+                    rateForSale: 0.05,
+                },
+            });
         });
     });
 });
