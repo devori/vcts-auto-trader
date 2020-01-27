@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post('/users/:user/auto-traders/:market/:base', (req, res, next) => {
     const {
-        interval, minUnits, maxUnits, coins,
+        interval, minUnits, maxUnits, coins, unitRange,
         rule = {
             name: 'default',
             options: {
@@ -16,7 +16,7 @@ router.post('/users/:user/auto-traders/:market/:base', (req, res, next) => {
         },
     } = req.body;
 
-    if (!interval || interval < 1000 || !minUnits || !maxUnits || !coins) {
+    if (!interval || interval < 1000 || !minUnits || !maxUnits || !coins || !unitRange) {
         res.sendStatus(500);
         return;
     }
@@ -28,6 +28,7 @@ router.post('/users/:user/auto-traders/:market/:base', (req, res, next) => {
         maxUnits,
         coins,
         rule,
+        unitRange,
     });
 
     looper.run(user, market, base, {

@@ -52,6 +52,7 @@ describe('router/private', function () {
                     minUnits: 1,
                     maxUnits: 2,
                     coins: 'coins',
+                    unitRange: [1, 100],
                 })
                 .expect(201)
                 .end((err) => {
@@ -71,6 +72,7 @@ describe('router/private', function () {
                     minUnits: 1,
                     maxUnits: 2,
                     coins: 'hello',
+                    unitRange: [1, 100],
                     rule: {
                         name: 'hello',
                         options: {
@@ -90,6 +92,7 @@ describe('router/private', function () {
                         minUnits: 1,
                         maxUnits: 2,
                         coins: 'hello',
+                        unitRange: [1, 100],
                         rule: {
                             name: 'hello',
                             options: {
@@ -110,6 +113,7 @@ describe('router/private', function () {
                     minUnits: 1,
                     maxUnits: 2,
                     coins: 'hello',
+                    unitRange: [1, 100],
                 })
                 .expect(201)
                 .end((err) => {
@@ -122,6 +126,7 @@ describe('router/private', function () {
                         minUnits: 1,
                         maxUnits: 2,
                         coins: 'hello',
+                        unitRange: [1, 100],
                         rule: {
                             name: 'default',
                             options: {
@@ -142,6 +147,7 @@ describe('router/private', function () {
                     minUnits: 1,
                     maxUnits: 2,
                     coins: 'hello',
+                    unitRange: [1, 100],
                 })
                 .expect(201)
                 .end((err) => {
@@ -174,6 +180,7 @@ describe('router/private', function () {
                     minUnits: 1,
                     maxUnits: 2,
                     coins: 'hello',
+                    unitRange: [1, 100],
                     rule: {
                         name: 'hello',
                         options: {
@@ -212,6 +219,7 @@ describe('router/private', function () {
                     interval: INTERVAL,
                     minUnits: 1,
                     maxUnits: 2,
+                    unitRange: [1, 100],
                 })
                 .expect(500)
                 .end((err) => {
@@ -229,7 +237,8 @@ describe('router/private', function () {
                 .send({
                     minUnits: 1,
                     maxUnits: 2,
-                    coins: 'hello'
+                    coins: 'hello',
+                    unitRange: [1, 100],
                 })
                 .expect(500)
                 .end((err) => {
@@ -248,7 +257,27 @@ describe('router/private', function () {
                     interval: 999,
                     minUnits: 1,
                     maxUnits: 2,
-                    coins: 0.01
+                    coins: 0.01,
+                    unitRange: [1, 100],
+                })
+                .expect(500)
+                .end((err) => {
+                    if (err) {
+                        expect.fail('', '', err);
+                        return;
+                    }
+                    done();
+                });
+        });
+
+        it('should return 500 when without unitRange', done => {
+            supertest(app)
+                .post(`/users/${USER}/auto-traders/${MARKET_A}/${BASE}`)
+                .send({
+                    interval: 1000,
+                    minUnits: 1,
+                    maxUnits: 2,
+                    coins: 0.01,
                 })
                 .expect(500)
                 .end((err) => {
