@@ -24,6 +24,7 @@ export function trade(accountId, market, base, options) {
         logger.info('Trader - Buy');
         let baseAssetUnits = assets[base][base][0].units;
         return options.coins.filter(coin => coin.purchase.inUse).reduce((p, coin) => {
+            logger.info(`Trader - Purchase: ${coin.name} Start`)
             try {
                 if (baseAssetUnits < options.minUnits) {
                     return p;
@@ -73,6 +74,7 @@ export function trade(accountId, market, base, options) {
     }).then(({tickers, assets, exchangeInfo}) => {
         logger.info('Trader - Sell');
         return options.coins.filter(coin => coin.sale.inUse).reduce((p, coin) => {
+            logger.info(`Trader - Sell: ${coin.name} Start`)
             try {
                 const {name} = coin;
                 let {units, rate} = rule.judgeForSale(base, name, {
