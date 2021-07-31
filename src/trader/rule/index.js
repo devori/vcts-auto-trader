@@ -23,7 +23,7 @@ export function judgeForPurchase(base, vcType, {tickers, assets = [], maxBaseUni
 export function judgeForSale(base, vcType, {tickers, assets = []}, {rateForSale = 0.07}) {
     logger.verbose('Judgement for sale');
     let lastTicker = tickers[tickers.length - 1];
-    let threshold = lastTicker.bid * (1 - rateForSale);
+    let threshold = lastTicker.bid / (1 + rateForSale);
     let totalUnits = assets.reduce((acc, a) => acc + a.units, 0);
     let units = assets.reduce((acc, a) => {
         if (a.rate < threshold) {
