@@ -7,7 +7,7 @@
     "start": "nodemon src/index.js --exec babel-node --ignore data",
     "build": "babel src -d dist",
     "serve": "node dist/index.js",
-    "test": "mocha --compilers js:babel-register ./test/**/*.js"
+    "test": "pwd && mocha --compilers js:babel-register ./test/**/*"
   },
   "repository": {
     "type": "git",

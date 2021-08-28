@@ -1,10 +1,12 @@
-import * as rule from './rule';
+import * as defaultRule from './rule';
+import * as exactRule from './rule/exact-rule';
 import * as vctsApi from '../api/vcts';
 import logger from '../util/logger';
 import math from '../util/math';
 
 export function trade(accountId, market, base, options) {
-    logger.info(`Auto-Trader Start [${market} - ${base}]`);
+    logger.info(`Auto-Trader Start [${market} - ${base}], Rule(${options.rule.name})`);
+    const rule = options.rule.name === 'EXACT' ? exactRule : defaultRule;
     return Promise.resolve().then(() => {
         return vctsApi.syncAssets(accountId, market, base, base);
     }).then(() => {
