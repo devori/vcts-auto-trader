@@ -36,8 +36,8 @@
     "uuid": "^3.1.0"
   },
   "dependencies": {
-    "body-parser": "^1.17.2",
-    "express": "^4.15.3",
+    "body-parser": "^1.20.1",
+    "express": "^4.18.2",
     "lodash": "^4.17.4",
     "lowdb": "^1.0.0",
     "winston": "^2.4.0",
